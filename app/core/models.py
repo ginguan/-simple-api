@@ -20,16 +20,18 @@ def recipe_image_file_path(instance, filename):
 
     return os.path.join('uploads', 'recipe', filename)
 
-
+"""Manager for users."""
 class UserManager(BaseUserManager):
-    """Manager for users."""
-
+    
     def create_user(self, email, password=None, **extra_fields):
         """Create, save and return a new user."""
         if not email:
             raise ValueError('User must have an email address.')
+        # same as defining a new User object out of user clause
         user = self.model(email=self.normalize_email(email), **extra_fields)
+        # a method that takes a plain-text password as an argument, hashes it, and stores the hashed version of the password in the user's record in the database.
         user.set_password(password)
+        # a method that writes the current state of the user object to the database
         user.save(using=self._db)
 
         return user
@@ -43,21 +45,25 @@ class UserManager(BaseUserManager):
 
         return user
 
-
+"""User in the system."""
 class User(AbstractBaseUser, PermissionsMixin):
-    """User in the system."""
+    # AbstractBaseUser: functionality for auth system
+    # PermissionsMixin: functionality for permissions & fields
+
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False) # used to login with Django admin
 
+    # making an instance of UserManager available on each instance of the User model. This allows you to perform operations like User.objects.create_user(...)
     objects = UserManager()
 
+    # define the field that we want to used for aythentication
     USERNAME_FIELD = 'email'
 
-
+"""Recipe object."""
 class Recipe(models.Model):
-    """Recipe object."""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
